@@ -13,14 +13,14 @@ public class MathFunctionsPropertiesTest {
 
     @Property
     @Label("MultiplyByTwo: O resultado é sempre par")
-    void multiplyByTwo_resultIsAlwaysEven(@ForAll int number) {
+    void multiplyByTwo(@ForAll int number) {
         int result = MathFunctions.MultiplyByTwo(number);
 
         assertEquals(0, result % 2, "Resultado de MultiplyByTwo deveria ser par. Número: " + number + ", Resultado: " + result);
     }
 
     @Property
-    void generateMultiplicationTable_elementsAreMultiples_noOverflow(
+    void generateMultiplicationTable(
             @ForAll int number,
             @ForAll @Positive @IntRange(max = 1000) int limit
     ) {
@@ -44,7 +44,7 @@ public class MathFunctionsPropertiesTest {
     }
 
     @Property
-    void generateMultiplicationTable_sizeIsCorrect(
+    void generateMultiplicationTableSizeIsCorrect(
             @ForAll int number,
             @ForAll @Positive @IntRange(max = 1000) int limit
     ) {
@@ -53,7 +53,7 @@ public class MathFunctionsPropertiesTest {
     }
 
     @Property
-    void isPrime_compositesReturnFalse(
+    void isPrime(
             @ForAll @IntRange(min = 2, max = 65536) int a,
             @ForAll @IntRange(min = 2, max = 65536) int b
     ) {
@@ -74,7 +74,7 @@ public class MathFunctionsPropertiesTest {
     }
 
     @Property
-    void calculateAverage_resultIsBetweenMinAndMax(@ForAll("nonEmptyIntArrays") int[] numbers) {
+    void calculateAverage(@ForAll("nonEmptyIntArrays") int[] numbers) {
         int min = Arrays.stream(numbers).min().getAsInt();
         int max = Arrays.stream(numbers).max().getAsInt();
         double average = MathFunctions.CalculateAverage(numbers);
