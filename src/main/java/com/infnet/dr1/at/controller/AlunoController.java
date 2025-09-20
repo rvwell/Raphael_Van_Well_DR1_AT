@@ -1,5 +1,6 @@
 package com.infnet.dr1.at.controller;
 
+import com.infnet.dr1.at.controller.dto.AlocarDisciplinasRequest;
 import com.infnet.dr1.at.model.Aluno;
 import com.infnet.dr1.at.service.AlunoService;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,18 @@ public class AlunoController {
                     return ResponseEntity.ok(alunoService.salvar(aluno));
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/disciplinas")
+    @PreAuthorize("hasRole('PROFESSOR')")
+    public ResponseEntity<?> alocarDisciplinas(@PathVariable String id, @RequestBody AlocarDisciplinasRequest request) {
+        try {
+            return alunoService.alocarEmDisciplinasPorCodigo(id, request.getCodigosDisciplinas())
+                    .<ResponseEntity<?>>map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
