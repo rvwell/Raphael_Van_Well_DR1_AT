@@ -1,0 +1,89 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ProfessorRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.infnet.dr1.at.repository</a>
+</div>
+
+<h1>Coverage Summary for Class: ProfessorRepository (com.infnet.dr1.at.repository)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">ProfessorRepository$MockitoMock$Xk5NTyKi</td>
+  </tr>
+  <tr>
+    <td class="name">ProfessorRepository$MockitoMock$Xk5NTyKi$auxiliary$9p7BHKGr</td>
+  </tr>
+  <tr>
+    <td class="name">ProfessorRepository$MockitoMock$Xk5NTyKi$auxiliary$lRnq5LEW</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.infnet.dr1.at.repository;
+&nbsp;
+&nbsp;import com.infnet.dr1.at.model.Professor;
+&nbsp;import org.springframework.data.mongodb.repository.MongoRepository;
+&nbsp;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;public interface ProfessorRepository extends MongoRepository&lt;Professor, String&gt; {
+&nbsp;
+&nbsp;    Optional&lt;Professor&gt; findByUsername(String username);
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-09-20 14:08</div>
+</div>
+</body>
+</html>

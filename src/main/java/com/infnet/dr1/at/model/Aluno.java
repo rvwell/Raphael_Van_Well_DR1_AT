@@ -15,6 +15,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Document(collection = "alunos")
 public class Aluno {
+
     @Id
     private String id;
 
@@ -33,6 +34,5 @@ public class Aluno {
     private Set<String> disciplinaIds;
 
     private List<Nota> notas;
-
 
 }

@@ -1,0 +1,143 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JwtService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.infnet.dr1.at.security</a>
+</div>
+
+<h1>Coverage Summary for Class: JwtService (com.infnet.dr1.at.security)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JwtService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14,3%
+  </span>
+  <span class="absValue">
+    (2/14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.infnet.dr1.at.security;
+&nbsp;
+&nbsp;import org.springframework.security.core.Authentication;
+&nbsp;import org.springframework.security.core.GrantedAuthority;
+&nbsp;import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+&nbsp;import org.springframework.security.oauth2.jwt.JwtEncoder;
+&nbsp;import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.time.Instant;
+&nbsp;import java.time.temporal.ChronoUnit;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;@Service
+&nbsp;public class JwtService {
+&nbsp;    private final JwtEncoder encoder;
+&nbsp;
+<b class="fc">&nbsp;    public JwtService(JwtEncoder encoder) {</b>
+<b class="fc">&nbsp;        this.encoder = encoder;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String generateToken(Authentication authentication) {
+<b class="nc">&nbsp;        Instant now = Instant.now();</b>
+&nbsp;
+<b class="nc">&nbsp;        String scope = authentication.getAuthorities().stream()</b>
+<b class="nc">&nbsp;                .map(GrantedAuthority::getAuthority)</b>
+<b class="nc">&nbsp;                .collect(Collectors.joining(&quot; &quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;        JwtClaimsSet claims = JwtClaimsSet.builder()</b>
+<b class="nc">&nbsp;                .issuer(&quot;self&quot;)</b>
+<b class="nc">&nbsp;                .issuedAt(now)</b>
+<b class="nc">&nbsp;                .expiresAt(now.plus(1, ChronoUnit.HOURS))</b>
+<b class="nc">&nbsp;                .subject(authentication.getName())</b>
+<b class="nc">&nbsp;                .claim(&quot;scope&quot;, scope)</b>
+<b class="nc">&nbsp;                .build();</b>
+&nbsp;
+<b class="nc">&nbsp;        return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-09-20 14:08</div>
+</div>
+</body>
+</html>

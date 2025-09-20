@@ -1,0 +1,213 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DisciplinaController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.infnet.dr1.at.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: DisciplinaController (com.infnet.dr1.at.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DisciplinaController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (29/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.infnet.dr1.at.controller;
+&nbsp;
+&nbsp;import com.infnet.dr1.at.controller.dto.NotaRequest;
+&nbsp;import com.infnet.dr1.at.model.Disciplina;
+&nbsp;import com.infnet.dr1.at.model.Aluno;
+&nbsp;import com.infnet.dr1.at.service.DisciplinaService;
+&nbsp;import com.infnet.dr1.at.service.AlunoService;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.security.access.prepost.PreAuthorize;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.net.URI;
+&nbsp;import java.security.Principal;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;disciplinas&quot;)
+&nbsp;public class DisciplinaController {
+&nbsp;
+&nbsp;    private final DisciplinaService disciplinaService;
+&nbsp;    private final AlunoService alunoService;
+&nbsp;
+<b class="fc">&nbsp;    public DisciplinaController(DisciplinaService disciplinaService, AlunoService alunoService) {</b>
+<b class="fc">&nbsp;        this.disciplinaService = disciplinaService;</b>
+<b class="fc">&nbsp;        this.alunoService = alunoService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;PROFESSOR&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;List&lt;Disciplina&gt;&gt; listarTodas() {
+<b class="fc">&nbsp;        return ResponseEntity.ok(disciplinaService.listarTodas());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/{id}&quot;)
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;PROFESSOR&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;Disciplina&gt; buscarPorId(@PathVariable String id) {
+<b class="fc">&nbsp;        return disciplinaService.buscarPorId(id)</b>
+<b class="fc">&nbsp;                .map(ResponseEntity::ok)</b>
+<b class="fc">&nbsp;                .orElse(ResponseEntity.notFound().build());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;PROFESSOR&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;Disciplina&gt; cadastrar(@RequestBody Disciplina disciplina) {
+<b class="fc">&nbsp;        Disciplina nova = disciplinaService.salvar(disciplina);</b>
+<b class="fc">&nbsp;        return ResponseEntity.created(URI.create(&quot;/disciplinas/&quot; + nova.getId())).body(nova);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PutMapping(&quot;/{id}&quot;)
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;PROFESSOR&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;Disciplina&gt; atualizar(@PathVariable String id, @RequestBody Disciplina disciplina) {
+<b class="fc">&nbsp;        return disciplinaService.buscarPorId(id)</b>
+<b class="fc">&nbsp;                .map(existente -&gt; {</b>
+<b class="fc">&nbsp;                    disciplina.setId(id);</b>
+<b class="fc">&nbsp;                    return ResponseEntity.ok(disciplinaService.salvar(disciplina));</b>
+&nbsp;                })
+<b class="fc">&nbsp;                .orElse(ResponseEntity.notFound().build());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PutMapping(&quot;/{disciplinaId}/alunos/{alunoId}/nota&quot;)
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;PROFESSOR&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; atribuirNota(Principal principal,
+&nbsp;                                          @PathVariable String disciplinaId,
+&nbsp;                                          @PathVariable String alunoId,
+&nbsp;                                          @RequestBody NotaRequest request) {
+&nbsp;        try {
+<b class="fc">&nbsp;            return alunoService.atribuirNota(principal.getName(), alunoId, disciplinaId, request.getNota())</b>
+<b class="fc">&nbsp;                    .&lt;ResponseEntity&lt;?&gt;&gt;map(ResponseEntity::ok)</b>
+<b class="fc">&nbsp;                    .orElse(ResponseEntity.notFound().build());</b>
+&nbsp;        } catch (SecurityException se) {
+<b class="fc">&nbsp;            return ResponseEntity.status(403).body(se.getMessage());</b>
+&nbsp;        } catch (IllegalArgumentException iae) {
+<b class="fc">&nbsp;            return ResponseEntity.badRequest().body(iae.getMessage());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/{disciplinaId}/aprovados&quot;)
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;PROFESSOR&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; listarAprovados(Principal principal, @PathVariable String disciplinaId) {
+&nbsp;        try {
+<b class="fc">&nbsp;            List&lt;Aluno&gt; aprovados = alunoService.listarAprovados(principal.getName(), disciplinaId);</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok(aprovados);</b>
+&nbsp;        } catch (SecurityException se) {
+<b class="fc">&nbsp;            return ResponseEntity.status(403).body(se.getMessage());</b>
+&nbsp;        } catch (IllegalArgumentException iae) {
+<b class="fc">&nbsp;            return ResponseEntity.badRequest().body(iae.getMessage());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/{disciplinaId}/reprovados&quot;)
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;PROFESSOR&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; listarReprovados(Principal principal, @PathVariable String disciplinaId) {
+&nbsp;        try {
+<b class="fc">&nbsp;            List&lt;Aluno&gt; reprovados = alunoService.listarReprovados(principal.getName(), disciplinaId);</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok(reprovados);</b>
+&nbsp;        } catch (SecurityException se) {
+<b class="fc">&nbsp;            return ResponseEntity.status(403).body(se.getMessage());</b>
+&nbsp;        } catch (IllegalArgumentException iae) {
+<b class="fc">&nbsp;            return ResponseEntity.badRequest().body(iae.getMessage());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @DeleteMapping(&quot;/{id}&quot;)
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;PROFESSOR&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;Void&gt; deletar(@PathVariable String id) {
+<b class="fc">&nbsp;        disciplinaService.deletar(id);</b>
+<b class="fc">&nbsp;        return ResponseEntity.noContent().build();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-09-20 14:08</div>
+</div>
+</body>
+</html>

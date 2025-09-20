@@ -13,6 +13,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Document(collection = "professores")
 public class Professor {
+
     @Id
     private String id;
 
@@ -22,4 +23,5 @@ public class Professor {
     private String password;
 
     private Set<String> roles;
+
 }

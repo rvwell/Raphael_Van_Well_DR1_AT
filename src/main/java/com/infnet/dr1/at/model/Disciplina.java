@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Document(collection = "disciplinas")
 public class Disciplina {
+
     @Id
     private String id;
 
@@ -22,4 +23,5 @@ public class Disciplina {
 
     @Indexed
     private String professorId;
+
 }
