@@ -24,7 +24,6 @@ public class AlunoService {
     }
 
     public Aluno salvar(Aluno aluno) {
-        // Adicionar validações de negócio aqui (ex: CPF, e-mail já existem?)
         return alunoRepository.save(aluno);
     }
 

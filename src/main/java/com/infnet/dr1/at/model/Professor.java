@@ -17,7 +17,7 @@ public class Professor {
     private String id;
 
     @Indexed(unique = true)
-    private String username; // Usaremos e-mail como username
+    private String username;
 
     private String password;
 

@@ -21,7 +21,7 @@ import java.util.Set;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/auth")
+@RequestMapping("auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -30,7 +30,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
 
-    @PostMapping("/login")
+    @PostMapping("login")
     public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authService.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
@@ -39,7 +39,7 @@ public class AuthController {
         return ResponseEntity.ok(token);
     }
 
-    @PostMapping("/register")
+    @PostMapping("register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
         if (professorRepository.findByUsername(registerRequest.username()).isPresent()) {
             return ResponseEntity.badRequest().body("Username já está em uso.");

@@ -9,7 +9,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/alunos")
+@RequestMapping("alunos")
 public class AlunoController {
 
     private final AlunoService alunoService;
