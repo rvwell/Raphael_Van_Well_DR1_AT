@@ -3,10 +3,8 @@ package com.infnet.dr1.at.service;
 import com.infnet.dr1.at.model.Aluno;
 import com.infnet.dr1.at.model.Disciplina;
 import com.infnet.dr1.at.model.Nota;
-import com.infnet.dr1.at.model.Professor;
 import com.infnet.dr1.at.repository.AlunoRepository;
 import com.infnet.dr1.at.repository.DisciplinaRepository;
-import com.infnet.dr1.at.repository.ProfessorRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,12 +19,10 @@ public class AlunoService {
 
     private final AlunoRepository alunoRepository;
     private final DisciplinaRepository disciplinaRepository;
-    private final ProfessorRepository professorRepository;
 
-    public AlunoService(AlunoRepository alunoRepository, DisciplinaRepository disciplinaRepository, ProfessorRepository professorRepository) {
+    public AlunoService(AlunoRepository alunoRepository, DisciplinaRepository disciplinaRepository) {
         this.alunoRepository = alunoRepository;
         this.disciplinaRepository = disciplinaRepository;
-        this.professorRepository = professorRepository;
     }
 
     public List<Aluno> listarTodos() {
@@ -65,14 +61,8 @@ public class AlunoService {
         if (nota == null || nota < 0 || nota > 10) {
             throw new IllegalArgumentException("Nota inválida. Informe um valor entre 0 e 10.");
         }
-        Professor professor = professorRepository.findByUsername(professorUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Professor não encontrado."));
-
         Disciplina disciplina = disciplinaRepository.findById(disciplinaId)
                 .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
-        if (disciplina.getProfessorId() == null || !disciplina.getProfessorId().equals(professor.getId())) {
-            throw new SecurityException("Você não está cadastrado como responsável por esta disciplina.");
-        }
 
         Optional<Aluno> optAluno = alunoRepository.findById(alunoId);
         if (optAluno.isEmpty()) return Optional.empty();
@@ -95,13 +85,8 @@ public class AlunoService {
     }
 
     public List<Aluno> listarAprovados(String professorUsername, String disciplinaId) {
-        Professor professor = professorRepository.findByUsername(professorUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Professor não encontrado."));
         Disciplina disciplina = disciplinaRepository.findById(disciplinaId)
                 .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
-        if (disciplina.getProfessorId() == null || !disciplina.getProfessorId().equals(professor.getId())) {
-            throw new SecurityException("Você não está cadastrado como responsável por esta disciplina.");
-        }
         List<Aluno> todos = alunoRepository.findAll();
         return todos.stream()
                 .filter(a -> a.getDisciplinaIds() != null && a.getDisciplinaIds().contains(disciplinaId))
@@ -113,13 +98,8 @@ public class AlunoService {
     }
 
     public List<Aluno> listarReprovados(String professorUsername, String disciplinaId) {
-        Professor professor = professorRepository.findByUsername(professorUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Professor não encontrado."));
         Disciplina disciplina = disciplinaRepository.findById(disciplinaId)
                 .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
-        if (disciplina.getProfessorId() == null || !disciplina.getProfessorId().equals(professor.getId())) {
-            throw new SecurityException("Você não está cadastrado como responsável por esta disciplina.");
-        }
         List<Aluno> todos = alunoRepository.findAll();
         return todos.stream()
                 .filter(a -> a.getDisciplinaIds() != null && a.getDisciplinaIds().contains(disciplinaId))

@@ -30,7 +30,7 @@ class AlunoServiceTest {
         alunoRepository = Mockito.mock(AlunoRepository.class);
         disciplinaRepository = Mockito.mock(DisciplinaRepository.class);
         professorRepository = Mockito.mock(ProfessorRepository.class);
-        service = new AlunoService(alunoRepository, disciplinaRepository, professorRepository);
+        service = new AlunoService(alunoRepository, disciplinaRepository);
     }
 
     @Test
@@ -92,7 +92,7 @@ class AlunoServiceTest {
         Aluno a = new Aluno(); a.setId("a1");
         when(alunoRepository.findById("a1")).thenReturn(Optional.of(a));
         when(disciplinaRepository.findByCodigoIn(List.of("D1","D2")))
-                .thenReturn(List.of(new Disciplina("1","POO","D1","p1"))); // apenas uma encontrada
+                .thenReturn(List.of(new Disciplina("1","POO","D1"))); // apenas uma encontrada
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> service.alocarEmDisciplinasPorCodigo("a1", List.of("D1","D2")));
@@ -104,8 +104,8 @@ class AlunoServiceTest {
     void alocarEmDisciplinas_sucesso() {
         Aluno a = new Aluno(); a.setId("a1");
         when(alunoRepository.findById("a1")).thenReturn(Optional.of(a));
-        Disciplina d1 = new Disciplina("1","POO","D1","p1");
-        Disciplina d2 = new Disciplina("2","BD","D2","p1");
+        Disciplina d1 = new Disciplina("1","POO","D1");
+        Disciplina d2 = new Disciplina("2","BD","D2");
         when(disciplinaRepository.findByCodigoIn(List.of("D1","D2")))
                 .thenReturn(List.of(d1, d2));
         when(alunoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -127,13 +127,12 @@ class AlunoServiceTest {
     }
 
     @Test
-    @DisplayName("atribuirNota - professor nao encontrado")
+    @DisplayName("atribuirNota - disciplina nao encontrada")
     void atribuirNota_professorNaoEncontrado() {
-        when(professorRepository.findByUsername("prof"))
-                .thenReturn(Optional.empty());
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.empty());
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> service.atribuirNota("prof","a1","d1", 7.0));
-        assertTrue(ex.getMessage().contains("Professor não encontrado"));
+        assertTrue(ex.getMessage().contains("Disciplina não encontrada"));
     }
 
     @Test
@@ -152,10 +151,13 @@ class AlunoServiceTest {
     void atribuirNota_professorNaoResponsavel() {
         when(professorRepository.findByUsername("prof"))
                 .thenReturn(Optional.of(new Professor("p1", "prof", "pass", Set.of("ROLE_PROFESSOR"))));
-        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1","outroProf")));
-        SecurityException ex = assertThrows(SecurityException.class,
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1")));
+        // Como não há mais vínculo de professor na disciplina, o erro relevante aqui é o aluno não alocado
+        Aluno a = new Aluno(); a.setId("a1"); a.setDisciplinaIds(Set.of("outra"));
+        when(alunoRepository.findById("a1")).thenReturn(Optional.of(a));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> service.atribuirNota("prof","a1","d1", 7.0));
-        assertTrue(ex.getMessage().contains("responsável"));
+        assertTrue(ex.getMessage().contains("não está alocado"));
     }
 
     @Test
@@ -163,7 +165,7 @@ class AlunoServiceTest {
     void atribuirNota_alunoNaoEncontrado() {
         when(professorRepository.findByUsername("prof"))
                 .thenReturn(Optional.of(new Professor("p1", "prof", "pass", Set.of("ROLE_PROFESSOR"))));
-        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1","p1")));
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1")));
         when(alunoRepository.findById("a1")).thenReturn(Optional.empty());
         Optional<Aluno> result = service.atribuirNota("prof","a1","d1", 7.0);
         assertTrue(result.isEmpty());
@@ -174,7 +176,7 @@ class AlunoServiceTest {
     void atribuirNota_alunoNaoAlocado() {
         when(professorRepository.findByUsername("prof"))
                 .thenReturn(Optional.of(new Professor("p1", "prof", "pass", Set.of("ROLE_PROFESSOR"))));
-        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1","p1")));
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1")));
         Aluno a = new Aluno(); a.setId("a1"); a.setDisciplinaIds(Set.of("outra"));
         when(alunoRepository.findById("a1")).thenReturn(Optional.of(a));
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
@@ -187,7 +189,7 @@ class AlunoServiceTest {
     void atribuirNota_criaNotaNova() {
         when(professorRepository.findByUsername("prof"))
                 .thenReturn(Optional.of(new Professor("p1", "prof", "pass", Set.of("ROLE_PROFESSOR"))));
-        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1","p1")));
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1")));
         Aluno a = new Aluno(); a.setId("a1"); a.setDisciplinaIds(Set.of("d1")); a.setNotas(new ArrayList<>());
         when(alunoRepository.findById("a1")).thenReturn(Optional.of(a));
         when(alunoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -207,7 +209,7 @@ class AlunoServiceTest {
     void atribuirNota_atualizaNotaExistente() {
         when(professorRepository.findByUsername("prof"))
                 .thenReturn(Optional.of(new Professor("p1", "prof", "pass", Set.of("ROLE_PROFESSOR"))));
-        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1","p1")));
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1")));
         Nota nota = new Nota("d1", 5.0);
         Aluno a = new Aluno(); a.setId("a1"); a.setDisciplinaIds(Set.of("d1")); a.setNotas(new ArrayList<>(List.of(nota)));
         when(alunoRepository.findById("a1")).thenReturn(Optional.of(a));
@@ -226,7 +228,7 @@ class AlunoServiceTest {
     void listarAprovados_filtra() {
         when(professorRepository.findByUsername("prof"))
                 .thenReturn(Optional.of(new Professor("p1", "prof", "pass", Set.of("ROLE_PROFESSOR"))));
-        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1","p1")));
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1")));
 
         Aluno a1 = new Aluno(); a1.setId("a1"); a1.setDisciplinaIds(Set.of("d1")); a1.setNotas(List.of(new Nota("d1", 7.0)));
         Aluno a2 = new Aluno(); a2.setId("a2"); a2.setDisciplinaIds(Set.of("d1")); a2.setNotas(List.of(new Nota("d1", 6.9)));
@@ -243,7 +245,7 @@ class AlunoServiceTest {
     void listarReprovados_filtra() {
         when(professorRepository.findByUsername("prof"))
                 .thenReturn(Optional.of(new Professor("p1", "prof", "pass", Set.of("ROLE_PROFESSOR"))));
-        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1","p1")));
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1")));
 
         Aluno a1 = new Aluno(); a1.setId("a1"); a1.setDisciplinaIds(Set.of("d1")); a1.setNotas(List.of(new Nota("d1", 7.0)));
         Aluno a2 = new Aluno(); a2.setId("a2"); a2.setDisciplinaIds(Set.of("d1")); a2.setNotas(List.of(new Nota("d1", 6.9)));
@@ -258,22 +260,22 @@ class AlunoServiceTest {
     @Test
     @DisplayName("listarAprovados - erro quando professor nao encontrado ou nao responsavel")
     void listarAprovados_erros() {
-        when(professorRepository.findByUsername("prof")).thenReturn(Optional.empty());
+        // Agora apenas valida disciplina existente; professor não é mais validado aqui
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.empty());
         assertThrows(IllegalArgumentException.class, () -> service.listarAprovados("prof","d1"));
 
-        when(professorRepository.findByUsername("prof")).thenReturn(Optional.of(new Professor("p1","prof","pass", Set.of("ROLE_PROFESSOR"))));
-        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","n","c","outro")));
-        assertThrows(SecurityException.class, () -> service.listarAprovados("prof","d1"));
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","n","c")));
+        assertDoesNotThrow(() -> service.listarAprovados("prof","d1"));
     }
 
     @Test
     @DisplayName("listarReprovados - erro quando professor nao encontrado ou nao responsavel")
     void listarReprovados_erros() {
-        when(professorRepository.findByUsername("prof")).thenReturn(Optional.empty());
+        // Agora apenas valida disciplina existente; professor não é mais validado aqui
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.empty());
         assertThrows(IllegalArgumentException.class, () -> service.listarReprovados("prof","d1"));
 
-        when(professorRepository.findByUsername("prof")).thenReturn(Optional.of(new Professor("p1","prof","pass", Set.of("ROLE_PROFESSOR"))));
-        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","n","c","outro")));
-        assertThrows(SecurityException.class, () -> service.listarReprovados("prof","d1"));
+        when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","n","c")));
+        assertDoesNotThrow(() -> service.listarReprovados("prof","d1"));
     }
 }

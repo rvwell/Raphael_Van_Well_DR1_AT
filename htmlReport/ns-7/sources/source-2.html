@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > Disciplina</title>
+  <title>Coverage Report > Professor</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -22,14 +22,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">com.infnet.dr1.at.model</a>
 </div>
 
-<h1>Coverage Summary for Class: Disciplina (com.infnet.dr1.at.model)</h1>
+<h1>Coverage Summary for Class: Professor (com.infnet.dr1.at.model)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Disciplina</td>
+  <td class="name">Professor</td>
 </tr>
 
 </table>
@@ -47,23 +47,23 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;import org.springframework.data.annotation.Id;
 &nbsp;import org.springframework.data.mongodb.core.index.Indexed;
 &nbsp;import org.springframework.data.mongodb.core.mapping.Document;
+&nbsp;import java.util.Set;
 &nbsp;
 &nbsp;@Data
 &nbsp;@NoArgsConstructor
 &nbsp;@AllArgsConstructor
-&nbsp;@Document(collection = &quot;disciplinas&quot;)
-&nbsp;public class Disciplina {
+&nbsp;@Document(collection = &quot;professores&quot;)
+&nbsp;public class Professor {
 &nbsp;
 &nbsp;    @Id
 &nbsp;    private String id;
 &nbsp;
-&nbsp;    private String nome;
-&nbsp;
 &nbsp;    @Indexed(unique = true)
-&nbsp;    private String codigo;
+&nbsp;    private String username;
 &nbsp;
-&nbsp;    @Indexed
-&nbsp;    private String professorId;
+&nbsp;    private String password;
+&nbsp;
+&nbsp;    private Set&lt;String&gt; roles;
 &nbsp;
 &nbsp;}
 </code>
@@ -89,7 +89,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-09-20 14:08</div>
+    <div style="float:right;">generated on 2025-09-21 20:04</div>
 </div>
 </body>
 </html>

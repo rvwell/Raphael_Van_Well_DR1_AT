@@ -45,7 +45,7 @@ class DisciplinaControllerTest {
     @WithMockUser(roles = "PROFESSOR")
     @DisplayName("GET /disciplinas -> 200")
     void listarTodas_ok() throws Exception {
-        when(disciplinaService.listarTodas()).thenReturn(List.of(new Disciplina("1","POO","C1","p1")));
+        when(disciplinaService.listarTodas()).thenReturn(List.of(new Disciplina("1","POO","C1")));
 
         mockMvc.perform(get("/disciplinas"))
                 .andExpect(status().isOk())
@@ -56,7 +56,7 @@ class DisciplinaControllerTest {
     @WithMockUser(roles = "PROFESSOR")
     @DisplayName("GET /disciplinas/{id} -> 200/404")
     void buscarPorId() throws Exception {
-        when(disciplinaService.buscarPorId("1")).thenReturn(Optional.of(new Disciplina("1","POO","C1","p1")));
+        when(disciplinaService.buscarPorId("1")).thenReturn(Optional.of(new Disciplina("1","POO","C1")));
         mockMvc.perform(get("/disciplinas/1")).andExpect(status().isOk()).andExpect(jsonPath("$.id", is("1")));
 
         when(disciplinaService.buscarPorId("9")).thenReturn(Optional.empty());
@@ -67,8 +67,8 @@ class DisciplinaControllerTest {
     @WithMockUser(roles = "PROFESSOR")
     @DisplayName("POST /disciplinas -> 201")
     void cadastrar_created() throws Exception {
-        Disciplina input = new Disciplina(null, "POO", "C1", "p1");
-        Disciplina saved = new Disciplina("1", "POO", "C1", "p1");
+        Disciplina input = new Disciplina(null, "POO", "C1");
+        Disciplina saved = new Disciplina("1", "POO", "C1");
         when(disciplinaService.salvar(any(Disciplina.class))).thenReturn(saved);
 
         mockMvc.perform(post("/disciplinas").with(csrf())
@@ -83,8 +83,8 @@ class DisciplinaControllerTest {
     @WithMockUser(roles = "PROFESSOR")
     @DisplayName("PUT /disciplinas/{id} -> 200/404")
     void atualizar() throws Exception {
-        Disciplina existing = new Disciplina("1","POO","C1","p1");
-        Disciplina updated = new Disciplina("1","POO2","C1","p1");
+        Disciplina existing = new Disciplina("1","POO","C1");
+        Disciplina updated = new Disciplina("1","POO2","C1");
         when(disciplinaService.buscarPorId("1")).thenReturn(Optional.of(existing));
         when(disciplinaService.salvar(any(Disciplina.class))).thenReturn(updated);
 

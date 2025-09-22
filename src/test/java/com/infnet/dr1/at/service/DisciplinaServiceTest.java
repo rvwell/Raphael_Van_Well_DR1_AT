@@ -30,8 +30,8 @@ class DisciplinaServiceTest {
     @DisplayName("listarTodas delega para repository.findAll()")
     void listarTodas() {
         List<Disciplina> expected = Arrays.asList(
-                new Disciplina("1","POO","DR1001","p1"),
-                new Disciplina("2","BD","DR1002","p2")
+                new Disciplina("1","POO","DR1001"),
+                new Disciplina("2","BD","DR1002")
         );
         when(repository.findAll()).thenReturn(expected);
 
@@ -45,7 +45,7 @@ class DisciplinaServiceTest {
     @Test
     @DisplayName("buscarPorId retorna Optional do repository")
     void buscarPorId() {
-        Disciplina d = new Disciplina("1","POO","DR1001","p1");
+        Disciplina d = new Disciplina("1","POO","DR1001");
         when(repository.findById("1")).thenReturn(Optional.of(d));
 
         Optional<Disciplina> result = service.buscarPorId("1");
@@ -58,7 +58,7 @@ class DisciplinaServiceTest {
     @Test
     @DisplayName("buscarPorCodigo retorna Optional do repository")
     void buscarPorCodigo() {
-        Disciplina d = new Disciplina("1","POO","DR1001","p1");
+        Disciplina d = new Disciplina("1","POO","DR1001");
         when(repository.findByCodigo("DR1001")).thenReturn(Optional.of(d));
 
         Optional<Disciplina> result = service.buscarPorCodigo("DR1001");
@@ -71,8 +71,8 @@ class DisciplinaServiceTest {
     @Test
     @DisplayName("salvar delega para repository.save() e retorna entidade")
     void salvar() {
-        Disciplina input = new Disciplina(null,"POO","DR1001","p1");
-        Disciplina saved = new Disciplina("1","POO","DR1001","p1");
+        Disciplina input = new Disciplina(null,"POO","DR1001");
+        Disciplina saved = new Disciplina("1","POO","DR1001");
         when(repository.save(input)).thenReturn(saved);
 
         Disciplina result = service.salvar(input);

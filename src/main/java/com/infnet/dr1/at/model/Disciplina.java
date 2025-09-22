@@ -21,7 +21,4 @@ public class Disciplina {
     @Indexed(unique = true)
     private String codigo;
 
-    @Indexed
-    private String professorId;
-
 }
