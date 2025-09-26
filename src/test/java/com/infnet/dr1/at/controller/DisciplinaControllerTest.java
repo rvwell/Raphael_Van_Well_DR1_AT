@@ -137,7 +137,7 @@ class DisciplinaControllerTest {
                 .thenThrow(new SecurityException("forbidden"));
         doPut("/disciplinas/d1/alunos/a1/nota", nota(8.0))
                 .andExpect(status().isForbidden());
-        
+
     }
 
     @Test
