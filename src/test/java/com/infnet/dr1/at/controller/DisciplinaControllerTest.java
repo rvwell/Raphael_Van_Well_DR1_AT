@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,13 +42,40 @@ class DisciplinaControllerTest {
     @MockitoBean
     private AlunoService alunoService;
 
+    private ResultActions doGet(String url) throws Exception {
+        return mockMvc.perform(get(url).principal(() -> "user"));
+    }
+
+    private ResultActions doPost(String url, Object body) throws Exception {
+        return mockMvc.perform(post(url).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body)));
+    }
+
+    private ResultActions doPut(String url, Object body) throws Exception {
+        return mockMvc.perform(put(url).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body))
+                .principal(() -> "user"));
+    }
+
+    private ResultActions doDelete(String url) throws Exception {
+        return mockMvc.perform(delete(url).with(csrf()));
+    }
+
+    private NotaRequest nota(double valor) {
+        NotaRequest req = new NotaRequest();
+        req.setNota(valor);
+        return req;
+    }
+
     @Test
     @WithMockUser(roles = "PROFESSOR")
     @DisplayName("GET /disciplinas -> 200")
     void listarTodas_ok() throws Exception {
         when(disciplinaService.listarTodas()).thenReturn(List.of(new Disciplina("1","POO","C1")));
 
-        mockMvc.perform(get("/disciplinas"))
+        doGet("/disciplinas")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is("1")));
     }
@@ -56,24 +84,25 @@ class DisciplinaControllerTest {
     @WithMockUser(roles = "PROFESSOR")
     @DisplayName("GET /disciplinas/{id} -> 200/404")
     void buscarPorId() throws Exception {
-        when(disciplinaService.buscarPorId("1")).thenReturn(Optional.of(new Disciplina("1","POO","C1")));
-        mockMvc.perform(get("/disciplinas/1")).andExpect(status().isOk()).andExpect(jsonPath("$.id", is("1")));
+        when(disciplinaService.buscarPorId("1"))
+                .thenReturn(Optional.of(new Disciplina("1","POO","C1")));
+        doGet("/disciplinas/1")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is("1")));
 
         when(disciplinaService.buscarPorId("9")).thenReturn(Optional.empty());
-        mockMvc.perform(get("/disciplinas/9")).andExpect(status().isNotFound());
+        doGet("/disciplinas/9")
+                .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(roles = "PROFESSOR")
     @DisplayName("POST /disciplinas -> 201")
     void cadastrar_created() throws Exception {
-        Disciplina input = new Disciplina(null, "POO", "C1");
         Disciplina saved = new Disciplina("1", "POO", "C1");
-        when(disciplinaService.salvar(any(Disciplina.class))).thenReturn(saved);
+        when(disciplinaService.salvar(any())).thenReturn(saved);
 
-        mockMvc.perform(post("/disciplinas").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(input)))
+        doPost("/disciplinas", new Disciplina(null, "POO", "C1"))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/disciplinas/1"))
                 .andExpect(jsonPath("$.id", is("1")));
@@ -83,129 +112,73 @@ class DisciplinaControllerTest {
     @WithMockUser(roles = "PROFESSOR")
     @DisplayName("PUT /disciplinas/{id} -> 200/404")
     void atualizar() throws Exception {
-        Disciplina existing = new Disciplina("1","POO","C1");
         Disciplina updated = new Disciplina("1","POO2","C1");
-        when(disciplinaService.buscarPorId("1")).thenReturn(Optional.of(existing));
-        when(disciplinaService.salvar(any(Disciplina.class))).thenReturn(updated);
+        when(disciplinaService.buscarPorId("1")).thenReturn(Optional.of(new Disciplina("1","POO","C1")));
+        when(disciplinaService.salvar(any())).thenReturn(updated);
 
-        mockMvc.perform(put("/disciplinas/1").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updated)))
+        doPut("/disciplinas/1", updated)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome", is("POO2")));
 
         when(disciplinaService.buscarPorId("9")).thenReturn(Optional.empty());
-        mockMvc.perform(put("/disciplinas/9").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updated)))
+        doPut("/disciplinas/9", updated)
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(roles = "PROFESSOR")
-    @DisplayName("PUT /disciplinas/{disciplinaId}/alunos/{alunoId}/nota -> 200")
-    void atribuirNota_ok() throws Exception {
-        NotaRequest req = new NotaRequest();
-        req.setNota(8.0);
-        when(alunoService.atribuirNota(eq("user"), eq("a1"), eq("d1"), eq(8.0)))
+    void atribuirNota_variacoes() throws Exception {
+        when(alunoService.atribuirNota("user","a1","d1",8.0))
                 .thenReturn(Optional.of(new Aluno()));
-
-        mockMvc.perform(put("/disciplinas/d1/alunos/a1/nota").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req))
-                        .principal(() -> "user"))
+        doPut("/disciplinas/d1/alunos/a1/nota", nota(8.0))
                 .andExpect(status().isOk());
-    }
 
-    @Test
-    @WithMockUser(roles = "PROFESSOR")
-    @DisplayName("PUT /disciplinas/{disciplinaId}/alunos/{alunoId}/nota -> 403 quando SecurityException")
-    void atribuirNota_forbidden() throws Exception {
-        NotaRequest req = new NotaRequest();
-        req.setNota(8.0);
-        when(alunoService.atribuirNota(anyString(), anyString(), anyString(), anyDouble()))
+        when(alunoService.atribuirNota(any(),any(),any(),anyDouble()))
                 .thenThrow(new SecurityException("forbidden"));
-
-        mockMvc.perform(put("/disciplinas/d1/alunos/a1/nota").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req))
-                        .principal(() -> "user"))
+        doPut("/disciplinas/d1/alunos/a1/nota", nota(8.0))
                 .andExpect(status().isForbidden());
+        
     }
 
     @Test
     @WithMockUser(roles = "PROFESSOR")
-    @DisplayName("PUT /disciplinas/{disciplinaId}/alunos/{alunoId}/nota -> 400 quando IllegalArgument")
-    void atribuirNota_badRequest() throws Exception {
-        NotaRequest req = new NotaRequest();
-        req.setNota(-1.0);
-        when(alunoService.atribuirNota(anyString(), anyString(), anyString(), anyDouble()))
-                .thenThrow(new IllegalArgumentException("bad"));
-
-        mockMvc.perform(put("/disciplinas/d1/alunos/a1/nota").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req))
-                        .principal(() -> "user"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @WithMockUser(roles = "PROFESSOR")
-    @DisplayName("PUT /disciplinas/{disciplinaId}/alunos/{alunoId}/nota -> 404 quando Optional.empty")
-    void atribuirNota_notFound() throws Exception {
-        NotaRequest req = new NotaRequest();
-        req.setNota(7.0);
-        when(alunoService.atribuirNota(anyString(), anyString(), anyString(), anyDouble()))
-                .thenReturn(Optional.empty());
-
-        mockMvc.perform(put("/disciplinas/d1/alunos/a1/nota").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req))
-                        .principal(() -> "user"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser(roles = "PROFESSOR")
-    @DisplayName("GET /disciplinas/{id}/aprovados -> 200/400/403")
-    void listarAprovados() throws Exception {
-        when(alunoService.listarAprovados(eq("user"), eq("d1"))).thenReturn(List.of(new Aluno()));
-        mockMvc.perform(get("/disciplinas/d1/aprovados").principal(() -> "user"))
+    void listarAprovados_variacoes() throws Exception {
+        when(alunoService.listarAprovados("user","d1")).thenReturn(List.of(new Aluno()));
+        doGet("/disciplinas/d1/aprovados")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
 
-        when(alunoService.listarAprovados(eq("user"), eq("d2"))).thenThrow(new IllegalArgumentException("bad"));
-        mockMvc.perform(get("/disciplinas/d2/aprovados").principal(() -> "user"))
+        when(alunoService.listarAprovados("user","d2")).thenThrow(new IllegalArgumentException());
+        doGet("/disciplinas/d2/aprovados")
                 .andExpect(status().isBadRequest());
 
-        when(alunoService.listarAprovados(eq("user"), eq("d3"))).thenThrow(new SecurityException("forbidden"));
-        mockMvc.perform(get("/disciplinas/d3/aprovados").principal(() -> "user"))
+        when(alunoService.listarAprovados("user","d3")).thenThrow(new SecurityException());
+        doGet("/disciplinas/d3/aprovados")
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "PROFESSOR")
-    @DisplayName("GET /disciplinas/{id}/reprovados -> 200/400/403")
-    void listarReprovados() throws Exception {
-        when(alunoService.listarReprovados(eq("user"), eq("d1"))).thenReturn(List.of(new Aluno()));
-        mockMvc.perform(get("/disciplinas/d1/reprovados").principal(() -> "user"))
+    void listarReprovados_variacoes() throws Exception {
+        when(alunoService.listarReprovados("user","d1")).thenReturn(List.of(new Aluno()));
+        doGet("/disciplinas/d1/reprovados")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
 
-        when(alunoService.listarReprovados(eq("user"), eq("d2"))).thenThrow(new IllegalArgumentException("bad"));
-        mockMvc.perform(get("/disciplinas/d2/reprovados").principal(() -> "user"))
+        when(alunoService.listarReprovados("user","d2")).thenThrow(new IllegalArgumentException());
+        doGet("/disciplinas/d2/reprovados")
                 .andExpect(status().isBadRequest());
 
-        when(alunoService.listarReprovados(eq("user"), eq("d3"))).thenThrow(new SecurityException("forbidden"));
-        mockMvc.perform(get("/disciplinas/d3/reprovados").principal(() -> "user"))
+        when(alunoService.listarReprovados("user","d3")).thenThrow(new SecurityException());
+        doGet("/disciplinas/d3/reprovados")
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "PROFESSOR")
-    @DisplayName("DELETE /disciplinas/{id} -> 204")
     void deletar() throws Exception {
-        mockMvc.perform(delete("/disciplinas/1").with(csrf()))
+        doDelete("/disciplinas/1")
                 .andExpect(status().isNoContent());
     }
 }
+

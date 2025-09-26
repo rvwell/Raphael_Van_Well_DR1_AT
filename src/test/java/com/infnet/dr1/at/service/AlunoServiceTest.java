@@ -152,7 +152,6 @@ class AlunoServiceTest {
         when(professorRepository.findByUsername("prof"))
                 .thenReturn(Optional.of(new Professor("p1", "prof", "pass", Set.of("ROLE_PROFESSOR"))));
         when(disciplinaRepository.findById("d1")).thenReturn(Optional.of(new Disciplina("d1","POO","C1")));
-        // Como não há mais vínculo de professor na disciplina, o erro relevante aqui é o aluno não alocado
         Aluno a = new Aluno(); a.setId("a1"); a.setDisciplinaIds(Set.of("outra"));
         when(alunoRepository.findById("a1")).thenReturn(Optional.of(a));
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
@@ -260,7 +259,7 @@ class AlunoServiceTest {
     @Test
     @DisplayName("listarAprovados - erro quando professor nao encontrado ou nao responsavel")
     void listarAprovados_erros() {
-        // Agora apenas valida disciplina existente; professor não é mais validado aqui
+
         when(disciplinaRepository.findById("d1")).thenReturn(Optional.empty());
         assertThrows(IllegalArgumentException.class, () -> service.listarAprovados("prof","d1"));
 
@@ -271,7 +270,7 @@ class AlunoServiceTest {
     @Test
     @DisplayName("listarReprovados - erro quando professor nao encontrado ou nao responsavel")
     void listarReprovados_erros() {
-        // Agora apenas valida disciplina existente; professor não é mais validado aqui
+
         when(disciplinaRepository.findById("d1")).thenReturn(Optional.empty());
         assertThrows(IllegalArgumentException.class, () -> service.listarReprovados("prof","d1"));
 
